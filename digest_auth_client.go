@@ -105,6 +105,7 @@ func (dr *DigestRequest) Execute() (resp *http.Response, err error) {
 	if req, err = http.NewRequest(dr.Method, dr.URI, bytes.NewReader([]byte(dr.Body))); err != nil {
 		return nil, err
 	}
+	req.Close = true
 	req.Header = dr.Header
 
 	client := dr.getHTTPClient()
@@ -166,6 +167,7 @@ func (dr *DigestRequest) executeRequest(authString string) (resp *http.Response,
 	if req, err = http.NewRequest(dr.Method, dr.URI, bytes.NewReader([]byte(dr.Body))); err != nil {
 		return nil, err
 	}
+	req.Close = true
 	req.Header = dr.Header
 	req.Header.Add("Authorization", authString)
 
