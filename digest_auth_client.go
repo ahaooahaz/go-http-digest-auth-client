@@ -46,9 +46,9 @@ func NewTransport(username, password string) DigestTransport {
 }
 
 func (dr *DigestRequest) getHTTPClient() *http.Client {
-	if dr.HTTPClient != nil {
-		return dr.HTTPClient
-	}
+	// if dr.HTTPClient != nil {
+	// 	return dr.HTTPClient
+	// }
 	tlsConfig := tls.Config{}
 	timeout := 30 * time.Second
 	if !dr.CertVal {
