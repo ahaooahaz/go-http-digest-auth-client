@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 )
+
+var Trans *http.Transport
 
 type DigestRequest struct {
 	Body       string
@@ -46,24 +49,33 @@ func NewTransport(username, password string) DigestTransport {
 }
 
 func (dr *DigestRequest) getHTTPClient() *http.Client {
-	// if dr.HTTPClient != nil {
-	// 	return dr.HTTPClient
-	// }
-	tlsConfig := tls.Config{}
-	timeout := 30 * time.Second
-	if !dr.CertVal {
-		tlsConfig.InsecureSkipVerify = true
-		return &http.Client{
-			Timeout: timeout,
-			Transport: &http.Transport{
-				TLSClientConfig: &tlsConfig,
+	if dr.HTTPClient != nil {
+		return dr.HTTPClient
+	}
+	if Trans == nil {
+		Trans = &http.Transport{
+			DialContext: (&net.Dialer{
+				Timeout:   10 * time.Second,
+				KeepAlive: 10 * time.Second,
+				DualStack: true,
+			}).DialContext,
+			MaxIdleConns:          100,
+			IdleConnTimeout:       30 * time.Second,
+			TLSHandshakeTimeout:   10 * time.Second,
+			ExpectContinueTimeout: 1 * time.Second,
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
 			},
 		}
 	}
 
-	return &http.Client{
-		Timeout: timeout,
+	client := &http.Client{
+		Transport: Trans,
+		Timeout:   time.Second * 30,
 	}
+
+	dr.HTTPClient = client
+	return client
 }
 
 // UpdateRequest is called when you want to reuse an existing
