@@ -8,10 +8,12 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
 var Trans *http.Transport
+var mtx sync.Mutex
 
 type DigestRequest struct {
 	Body       string
@@ -78,6 +80,12 @@ func (dr *DigestRequest) getHTTPClient() *http.Client {
 	return client
 }
 
+func doRequest(client *http.Client, req *http.Request) (*http.Response, error) {
+	mtx.Lock()
+	defer mtx.Unlock()
+	return client.Do(req)
+}
+
 // UpdateRequest is called when you want to reuse an existing
 //  DigestRequest connection with new request information
 func (dr *DigestRequest) UpdateRequest(username, password, method, uri, body string) *DigestRequest {
@@ -128,7 +136,7 @@ func (dr *DigestRequest) Execute() (resp *http.Response, err error) {
 
 	client := dr.getHTTPClient()
 
-	if resp, err = client.Do(req); err != nil {
+	if resp, err = doRequest(client, req); err != nil {
 		return nil, err
 	}
 
