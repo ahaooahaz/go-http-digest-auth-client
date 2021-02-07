@@ -199,5 +199,5 @@ func (dr *DigestRequest) executeRequest(authString string) (resp *http.Response,
 	req.Header.Add("Authorization", authString)
 
 	client := dr.getHTTPClient()
-	return client.Do(req)
+	return doRequest(client, req)
 }
