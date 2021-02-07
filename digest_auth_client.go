@@ -8,12 +8,12 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"sync"
 	"time"
 )
 
 var Trans *http.Transport
-var mtx sync.Mutex
+
+// var mtx sync.Mutex
 
 type DigestRequest struct {
 	Body       string
@@ -81,8 +81,8 @@ func (dr *DigestRequest) getHTTPClient() *http.Client {
 }
 
 func doRequest(client *http.Client, req *http.Request) (*http.Response, error) {
-	mtx.Lock()
-	defer mtx.Unlock()
+	// mtx.Lock()
+	// defer mtx.Unlock()
 	return client.Do(req)
 }
 
