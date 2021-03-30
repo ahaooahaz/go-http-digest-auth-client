@@ -2,7 +2,15 @@ language: golang
 
 golang: 1.15
 
+sudo: false
+
+before_install:
+  - go get -t -v ./...
+
+install: true
+
 script:
-  - go test authorization_test.go authorization.go digest_auth_client.go www_authenticate.go -coverprofile=coverage.data
-  - go tool cover -func=coverage.data
-coverage: '/total:\s*\(statements\)\s*\d+\.\d+\%/'
+  - go test authorization_test.go authorization.go digest_auth_client.go www_authenticate.go -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
