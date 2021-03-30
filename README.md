@@ -1,6 +1,8 @@
 # go-http-digest-auth-client
 Golang Http Digest Authentication Client
 
+[![Build Status](https://travis-ci.com/AHAOAHA/go-http-digest-auth-client.svg?branch=master)](https://travis-ci.com/AHAOAHA/go-http-digest-auth-client)
+
 This client implements [RFC7616 HTTP Digest Access Authentication](https://www.rfc-editor.org/rfc/rfc7616.txt)
 and by now the basic features should work.
 
