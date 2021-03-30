@@ -1,0 +1,8 @@
+language: golang
+
+golang: 1.15
+
+script:
+  - go test authorization_test.go authorization.go digest_auth_client.go www_authenticate.go -coverprofile=coverage.data
+  - go tool cover -func=coverage.data
+coverage: '/total:\s*\(statements\)\s*\d+\.\d+\%/'
