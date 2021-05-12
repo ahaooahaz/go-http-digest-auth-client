@@ -21,7 +21,6 @@ func newWwwAuthenticate(s string) *wwwAuthenticate {
 
 	var wa = wwwAuthenticate{}
 
-	// FIXME:正则表达匹配问题
 	algorithmRegex := regexp.MustCompile(`algorithm="([^ ,]+)"`)
 	algorithmMatch := algorithmRegex.FindStringSubmatch(s)
 	if algorithmMatch != nil {
