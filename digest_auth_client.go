@@ -8,9 +8,11 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
+var mtx sync.Mutex
 var Trans *http.Transport
 
 // var mtx sync.Mutex
@@ -54,6 +56,7 @@ func (dr *DigestRequest) getHTTPClient() *http.Client {
 	if dr.HTTPClient != nil {
 		return dr.HTTPClient
 	}
+	mtx.Lock()
 	if Trans == nil {
 		Trans = &http.Transport{
 			DialContext: (&net.Dialer{
@@ -70,6 +73,7 @@ func (dr *DigestRequest) getHTTPClient() *http.Client {
 			},
 		}
 	}
+	mtx.Unlock()
 
 	client := &http.Client{
 		Transport: Trans,
@@ -78,12 +82,6 @@ func (dr *DigestRequest) getHTTPClient() *http.Client {
 
 	dr.HTTPClient = client
 	return client
-}
-
-func doRequest(client *http.Client, req *http.Request) (*http.Response, error) {
-	// mtx.Lock()
-	// defer mtx.Unlock()
-	return client.Do(req)
 }
 
 // UpdateRequest is called when you want to reuse an existing
@@ -136,7 +134,7 @@ func (dr *DigestRequest) Execute() (resp *http.Response, err error) {
 
 	client := dr.getHTTPClient()
 
-	if resp, err = doRequest(client, req); err != nil {
+	if resp, err = client.Do(req); err != nil {
 		return nil, err
 	}
 
@@ -162,13 +160,14 @@ func (dr *DigestRequest) executeNewDigest(resp *http.Response) (resp2 *http.Resp
 	if waString = resp.Header.Get("WWW-Authenticate"); waString == "" {
 		return nil, fmt.Errorf("failed to get WWW-Authenticate header, please check your server configuration")
 	}
+	fmt.Printf("source auth str: %s\n", waString)
 	wa = newWwwAuthenticate(waString)
 	dr.Wa = wa
 
 	if auth, err = newAuthorization(dr); err != nil {
 		return nil, err
 	}
-
+	fmt.Printf("obj auth str: %s\n", auth.toString())
 	if resp2, err = dr.executeRequest(auth.toString()); err != nil {
 		return nil, err
 	}
@@ -199,5 +198,5 @@ func (dr *DigestRequest) executeRequest(authString string) (resp *http.Response,
 	req.Header.Add("Authorization", authString)
 
 	client := dr.getHTTPClient()
-	return doRequest(client, req)
+	return client.Do(req)
 }
