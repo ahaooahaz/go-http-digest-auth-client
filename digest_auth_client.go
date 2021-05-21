@@ -15,8 +15,6 @@ import (
 var mtx sync.Mutex
 var Trans *http.Transport
 
-// var mtx sync.Mutex
-
 type DigestRequest struct {
 	Body       string
 	Method     string
@@ -52,7 +50,7 @@ func NewTransport(username, password string) DigestTransport {
 	return dt
 }
 
-func (dr *DigestRequest) getHTTPClient() *http.Client {
+func (dr *DigestRequest) newClient() *http.Client {
 	if dr.HTTPClient != nil {
 		return dr.HTTPClient
 	}
@@ -132,7 +130,7 @@ func (dr *DigestRequest) Execute() (resp *http.Response, err error) {
 	req.Close = true
 	req.Header = dr.Header
 
-	client := dr.getHTTPClient()
+	client := dr.newClient()
 
 	if resp, err = client.Do(req); err != nil {
 		return nil, err
@@ -167,7 +165,7 @@ func (dr *DigestRequest) executeNewDigest(resp *http.Response) (resp2 *http.Resp
 	if auth, err = newAuthorization(dr); err != nil {
 		return nil, err
 	}
-	fmt.Printf("obj auth str: %s\n", auth.toString())
+
 	if resp2, err = dr.executeRequest(auth.toString()); err != nil {
 		return nil, err
 	}
@@ -197,6 +195,6 @@ func (dr *DigestRequest) executeRequest(authString string) (resp *http.Response,
 	req.Header = dr.Header
 	req.Header.Add("Authorization", authString)
 
-	client := dr.getHTTPClient()
+	client := dr.newClient()
 	return client.Do(req)
 }
