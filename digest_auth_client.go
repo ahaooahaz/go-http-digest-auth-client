@@ -158,7 +158,7 @@ func (dr *DigestRequest) executeNewDigest(resp *http.Response) (resp2 *http.Resp
 	if waString = resp.Header.Get("WWW-Authenticate"); waString == "" {
 		return nil, fmt.Errorf("failed to get WWW-Authenticate header, please check your server configuration")
 	}
-	fmt.Printf("source auth str: %s\n", waString)
+
 	wa = newWwwAuthenticate(waString)
 	dr.Wa = wa
 
