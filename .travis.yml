@@ -10,7 +10,7 @@ before_install:
 install: true
 
 script:
-  - go test authorization_test.go authorization.go digest_auth_client.go www_authenticate.go -coverprofile=coverage.txt -covermode=atomic
+  - make
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

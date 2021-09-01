@@ -6,14 +6,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"net"
 	"net/http"
-	"sync"
 	"time"
 )
-
-var mtx sync.Mutex
-var Trans *http.Transport
 
 type DigestRequest struct {
 	Body       string
@@ -49,37 +44,21 @@ func NewTransport(username, password string) DigestTransport {
 	dt.Username = username
 	return dt
 }
-
-func (dr *DigestRequest) newClient() *http.Client {
+func (dr *DigestRequest) getHTTPClient() *http.Client {
 	if dr.HTTPClient != nil {
 		return dr.HTTPClient
 	}
-	mtx.Lock()
-	if Trans == nil {
-		Trans = &http.Transport{
-			DialContext: (&net.Dialer{
-				Timeout:   10 * time.Second,
-				KeepAlive: 10 * time.Second,
-				DualStack: true,
-			}).DialContext,
-			MaxIdleConns:          100,
-			IdleConnTimeout:       30 * time.Second,
-			TLSHandshakeTimeout:   10 * time.Second,
-			ExpectContinueTimeout: 1 * time.Second,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		}
-	}
-	mtx.Unlock()
-
-	client := &http.Client{
-		Transport: Trans,
-		Timeout:   time.Second * 30,
+	tlsConfig := tls.Config{}
+	if !dr.CertVal {
+		tlsConfig.InsecureSkipVerify = true
 	}
 
-	dr.HTTPClient = client
-	return client
+	return &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: &tlsConfig,
+		},
+	}
 }
 
 // UpdateRequest is called when you want to reuse an existing
@@ -130,9 +109,7 @@ func (dr *DigestRequest) Execute() (resp *http.Response, err error) {
 	req.Close = true
 	req.Header = dr.Header
 
-	client := dr.newClient()
-
-	if resp, err = client.Do(req); err != nil {
+	if resp, err = dr.getHTTPClient().Do(req); err != nil {
 		return nil, err
 	}
 
@@ -195,6 +172,5 @@ func (dr *DigestRequest) executeRequest(authString string) (resp *http.Response,
 	req.Header = dr.Header
 	req.Header.Add("Authorization", authString)
 
-	client := dr.newClient()
-	return client.Do(req)
+	return dr.getHTTPClient().Do(req)
 }
