@@ -1,36 +1,33 @@
-package main
+package digest_auth_client
 
 import (
-	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
-
-	dac "github.com/AHAOAHA/go-http-digest-auth-client"
+	"testing"
 )
 
 const (
-	username = "test"
+	username = "ahaoo"
 	password = "test123"
 	method   = "GET"
 	uri      = "http://172.16.1.5"
 )
 
-func main() {
+func TestManual(t *testing.T) {
 	var resp *http.Response
 	var body []byte
 	var err error
 
-	dr := dac.NewRequest(username, password, method, uri, "")
+	dr := NewRequest(username, password, method, uri, "")
 
 	if resp, err = dr.Execute(); err != nil {
-		log.Fatalln(err)
+		t.Fatal(err.Error())
 	}
 	defer resp.Body.Close()
 
 	if body, err = ioutil.ReadAll(resp.Body); err != nil {
-		log.Fatalln(err)
+		t.Fatal(err.Error())
 	}
 
-	fmt.Printf(string(body))
+	t.Log(string(body))
 }
