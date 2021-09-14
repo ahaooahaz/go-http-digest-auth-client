@@ -91,6 +91,7 @@ func (dt *DigestTransport) RoundTrip(req *http.Request) (resp *http.Response, er
 	if dt.HTTPClient != nil {
 		dr.HTTPClient = dt.HTTPClient
 	}
+	dr.Header = req.Header
 
 	return dr.Execute()
 }
